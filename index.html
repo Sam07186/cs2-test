@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>CS2职业人格测试</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
+body{background:#121212;color:#fff;padding:20px}
+.container{max-width:500px;margin:0 auto}
+.title{font-size:24px;font-weight:700;text-align:center;margin:20px 0}
+.sub{text-align:center;color:#aaa;margin-bottom:20px}
+.progress{height:6px;background:#333;border-radius:3px;margin-bottom:20px}
+.bar{height:100%;background:#00c8ff;width:0;border-radius:3px}
+.question{font-size:18px;line-height:1.5;margin-bottom:15px}
+.option{background:#1e1e1e;padding:14px 16px;border-radius:10px;margin-bottom:10px;cursor:pointer}
+.option.active{background:#00c8ff22;color:#00c8ff;border:1px solid #00c8ff}
+.btn{width:100%;padding:16px;background:#00c8ff;color:#000;border:none;border-radius:12px;font-size:16px;margin-top:10px;font-weight:600}
+.btn2{background:#2a2a2a;color:#fff}
+.result{display:none;text-align:center}
+.res-name{font-size:22px;font-weight:700;margin:15px 0}
+.res-match{font-size:16px;color:#00c8ff;margin-bottom:12px;font-weight:500}
+.res-desc{background:#1e1e1e;padding:20px;border-radius:15px;text-align:left;margin:20px 0;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="container">
+<div id="test">
+<div class="title">CS2职业人格测试</div>
+<div class="sub">35题测出你像哪位职业选手</div>
+<div class="progress"><div class="bar" id="bar"></div></div>
+<div class="question" id="q"></div>
+<div id="opts"></div>
+<button class="btn" id="next">下一题</button>
+<button class="btn btn2" id="back" style="display:none">上一题</button>
+</div>
+
+<div class="result" id="result">
+<div class="title">CS2职业人格测试</div>
+<div class="res-name" id="rname"></div>
+<div class="res-match" id="rmatch"></div>
+<div class="res-desc" id="rdesc"></div>
+<button class="btn" onclick="location.reload()">重新测试</button>
+</div>
+</div>
+
+<script>
+const questions = [
+  {q:"CT防守思路？",o:["稳架等信息","前压抢控","游走补防","同步协防"]},
+  {q:"T进攻默认？",o:["慢控信息","爆弹快冲","绕后夹攻","同步战术"]},
+  {q:"T ECO局？",o:["保枪等下局","TEC-9强起","电击刀偷人","手枪闪配合"]},
+  {q:"CT ECO局？",o:["甲钳保枪","沙鹰赌枪","电击偷背","道具拖延"]},
+  {q:"CT回防思路？",o:["稳卡等时机","拉出秒人","绕后偷袭","道具分割"]},
+  {q:"T进攻风格？",o:["控图慢推","干拉突破","绕后夹B","爆弹同步"]},
+  {q:"T半甲选择？",o:["Galil稳打","无甲AK刚","MP9游走","配合突破"]},
+  {q:"CT半甲选择？",o:["FAMAS卡点","无甲M4","MP7前压","协防补枪"]},
+  {q:"CT站位偏好？",o:["狙击位控场","前压位抢点","游走位补防","交叉位协防"]},
+  {q:"T角色定位？",o:["断后保人","突破手","自由人","补枪位"]},
+  {q:"对手快攻A点？",o:["稳守拖延","前顶反清","绕后偷人","卡点等队友"]},
+  {q:"燃烧弹用法？",o:["封路防冲","逼敌人走位","干扰视野","分割战场"]},
+  {q:"1v3残局？",o:["稳等时机","主动找人","假拆骗枪","算时间身位"]},
+  {q:"全枪全弹进攻？",o:["慢控默认","抢点快攻","游走夹攻","同步爆弹"]},
+  {q:"CT远防风格？",o:["稳架不漏","前压混烟","游走控图","控线防Rush"]},
+  {q:"T团队职责？",o:["信息收集","突破开路","绕后收割","补枪兜底"]},
+  {q:"经济崩盘？",o:["纯ECO保枪","沙鹰强起","偷人攒经济","半甲拼枪"]},
+  {q:"守包思路？",o:["稳卡角度","前压找人","假拆勾引","卡时间差"]},
+  {q:"擅长武器？",o:["狙击枪","步枪","冲锋枪/喷子","全能"]},
+  {q:"游戏节奏？",o:["慢稳控图","极快进攻","灵活多变","纪律稳定"]},
+  {q:"队友白给？",o:["补防兜底","报仇刚枪","绕后偷人","调整站位"]},
+  {q:"地图控制？",o:["蚕食控图","抢点压制","局部优势","全面均衡"]},
+  {q:"对战高手？",o:["细节取胜","刚枪硬怼","智商拉扯","战术碾压"]},
+  {q:"自由人打法？",o:["信息侦查","突破收割","刺客偷人","协防补位"]},
+  {q:"烟雾弹用法？",o:["分割战场","混烟出击","欺骗假打","同步进攻"]},
+  {q:"闪光弹用法？",o:["自保反清","突破开路","偷袭背身","同步清点"]},
+  {q:"赛点局心态？",o:["稳定求稳","激进收割","出奇制胜","纪律执行"]},
+  {q:"CT防守策略？",o:["稳守待攻","前压控图","游走支援","交叉火力"]},
+  {q:"T正面进攻？",o:["慢摸推进","爆弹强冲","绕后夹击","同步清点"]},
+  {q:"制胜关键？",o:["大局观","个人枪法","灵性操作","团队纪律"]},
+  {q:"空枪后反应？",o:["冷静撤退","强行补枪","搞笑自嘲","分析调整"]},
+  {q:"被队友指责？",o:["不理会","互刚","阴阳怪气","沟通解释"]},
+  {q:"手感火热？",o:["更稳更慎","乱杀刷屏","整活整活","保持纪律"]},
+  {q:"输枪ECO？",o:["保枪下局","强起拼枪","摆烂娱乐","规划经济"]},
+  {q:"游戏快乐点？",o:["运筹帷幄","刷屏五杀","整活抽象","团队胜利"]}
+];
+
+const types = [
+  {n:"ZywOo（稳狠狙神）",d:"你像ZywOo：冷静、精准、细节拉满，控场型狙击手，极少失误，团队稳定输出点，打法稳健又致命。适合主狙/指挥位。"},
+  {n:"donk（年轻狂战士）",d:"你像donk：年轻激进、反应极快、枪法刚猛，喜欢前压突破、乱中取胜，爆发力极强，残局敢操作。适合突破/步枪手。"},
+  {n:"device（战术大师）",d:"你像device：理性、纪律、战术至上，稳扎稳打，控图与信息收集极强，团队大脑，胜率型选手。适合指挥/协防。"},
+  {n:"rain（铁血硬汉）",d:"你像rain：刚猛强硬、正面突破、不惧换血，越逆境越猛，团队突破手，负责打开缺口。适合突破/补枪。"},
+  {n:"Xyp9x（残局大师）",d:"你像Xyp9x：冷静、耐心、智商拉满，残局1vX专家，擅长心理博弈、假拆、拖时间，稳拿关键分。适合断后/守包。"},
+  {n:"electronic（全能稳核）",d:"你像electronic：全能稳定、补枪及时、防守滴水不漏，团队中流砥柱，不整活不白给。适合协防/多面手。"},
+  {n:"B1T（铁血突破）",d:"你像B1T：敢打敢冲、突破凶狠、枪法扎实，正面硬刚能力强，团队开路先锋。适合突破手。"},
+  {n:"Perfecto（工具人战神）",d:"你像Perfecto：无私奉献、道具拉满、保人断后，团队绿叶，为队友创造机会，执行力拉满。适合断后/辅助。"},
+  {n:"s1mple（天才怪物）",d:"你像s1mple：天赋拉满、操作逆天、敢秀敢操作，个人能力天花板，能创造奇迹的选手。适合狙击/突破。"},
+  {n:"狂鸟整活哥",d:"你是整活型玩家：快乐至上、爱搞怪、喜欢电击刀、烟雾弹整活，输赢无所谓，主打一个节目效果。"}
+];
+
+let curr = 0;
+let ans = Array(35).fill(null);
+let scores = Array(10).fill(0);
+
+function render(){
+  const q = questions[curr];
+  document.getElementById("q").innerText = (curr+1)+". "+q.q;
+  const opts = document.getElementById("opts");
+  opts.innerHTML = "";
+  q.o.forEach((opt,i)=>{
+    const div = document.createElement("div");
+    div.className = "option"+(ans[curr]==i?" active":"");
+    div.innerText = ["A","B","C","D"][i]+". "+opt;
+    div.onclick=()=>{ans[curr]=i;render()};
+    opts.appendChild(div);
+  });
+  document.getElementById("bar").style.width = ((curr+1)/35*100)+"%";
+  document.getElementById("back").style.display = curr>0?"block":"none";
+  document.getElementById("next").innerText = curr==34?"查看结果":"下一题";
+}
+
+document.getElementById("next").onclick=()=>{
+  if(ans[curr]==null)return alert("选一个选项！");
+  if(curr<34){curr++;render()}
+  else calcResult();
+};
+document.getElementById("back").onclick=()=>{curr--;render()};
+
+function calcResult(){
+  scores = Array(10).fill(0);
+  ans.forEach((a,i)=>{
+    const t = i%10;
+    scores[t] += a==0?3:a==1?2:a==2?1:0;
+  });
+  
+  const maxScore = Math.max(...scores);
+  const maxIdx = scores.indexOf(maxScore);
+  const totalMax = 35 * 3;
+  const matchPercent = Math.round((maxScore / totalMax) * 100);
+
+  document.getElementById("test").style.display="none";
+  document.getElementById("result").style.display="block";
+  document.getElementById("rname").innerText = types[maxIdx].n;
+  document.getElementById("rmatch").innerText = `人格匹配度：${matchPercent}%`;
+  document.getElementById("rdesc").innerText = types[maxIdx].d;
+}
+
+render();
+</script>
+</body>
+</html>
